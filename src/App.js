@@ -1,66 +1,164 @@
 import React, { Component } from 'react';
-import List from './components/List'
-import Button from './components/Button'
-import DragSortableList from 'react-drag-sortable'
+import Pagination from "react-js-pagination";
+// require("bootstrap/less/bootstrap.less");
 
 class App extends Component {
+  // constructor() {
+  //   super();
+  //   this.state = {
+  //     people: [],
+  //     lat: '27.957779,',
+  //     lng: '-82.514772'
+  //   };
+  // }
   state = {
-    inputName: '',
-    toDoList: [],
-    list: [
-      {content: (<li>test1</li>), classes:['bigger']},
-      {content: (<li>test2</li>)},
-      {content: (<li>test3</li>), classes:['bigger']},
-      {content: (<li>test4</li>)}
-  ]
-  }
-  handleChange = (e) => {
-    this.setState({
-      inputName: e.target.value
-    })
-  }
-  removeItemFromList = (mira) => {
-    this.setState({
-      toDoList: this.state.toDoList.filter(el => el !== mira)
-      
-      // list: this.state.list.filter(el => el !== mira)
+    people: [],
+    originalProjectList: [],
+    lat: '27.957779',
+    lng: '-82.514772',
+    activePage: 1,
+    itemPerPage: 20,
+    loadImage: <img src="loader.gif" />,
+    loaderText:  'Fetching data...',
+    isLoading: true
+    
 
-      
+  }
+  changeLatitude = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(this.showPosition);
+      this.fetchData()
+  } else {
+      // x.innerHTML = "Geolocation is not supported by this browser.";
+  }
+
+  }
+  showPosition = (position) => {
+    this.setState({
+      lat: position.coords.latitude,
+      lng: position.coords.longitude
     })
   }
-  handleAddItem = (event) => {
-    event.preventDefault()
-    if(this.state.inputName !== ''){
+
+  fetchData = () => {
+    fetch( `http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat=${this.state.lat}&lng=${this.state.lng}&fDstL=0&fDstU=1000`)
+    .then(response => response.json())
+    .then(response => {
       this.setState({
-        toDoList: [...this.state.toDoList, this.state.inputName],
-        list: [...this.state.list, {content: (<li onClick={this.removeItemFromList}><span>-</span><div className="title">Click Here to remove an item</div>>{this.state.inputName}</li>)}],
-        inputName: ""
+        people: response.acList,
+        originalProjectList: response.acList,
+        loadImage: '',
+        loaderText: '',
+        isLoading: false
       })
-    }
+      // console.log(lat)
+     })
+  }
+
+  componentDidMount() {
+    this.fetchData()
+    
+  }
+
+
+  handlePageChange = (pageNumber) => {
+    console.log(`active page is ${pageNumber}`);
+    this.setState({activePage: pageNumber});
   }
   
-  handleDoneAction = (event) => {
-    let itemIndex = event.target.getAttribute("key");
-    let prevOrders = [...this.state.toDoList];
-    var itemToMoveAtLast = prevOrders.splice(itemIndex, 1);
-    var updatedOrderList = prevOrders.concat(itemToMoveAtLast);
-    this.setState({toDoList: updatedOrderList})
-
-}
+     
+        
   render() {
-    const {inputName, toDoList, list} = this.state;
-    return (
-      <div className="App">
-        <div className="container">
-        <h1>To do List</h1>
-        <label>Please add item:</label><br />
-          <input type='text' value={inputName} onChange={this.handleChange} /><br />
-          <Button button={this.handleAddItem} buttonText="Add an item" />
-          <List toDo={toDoList} list={toDoList} removeItem={this.removeItemFromList}/>
-          {/* <DragSortableList items={list} type="horizontal" removeItem={this.removeItemFromList}/> */}
-          <Button button={this.handleDoneAction} buttonText='Reorder items' bgColor='#4BB46B' />
+    const{people, lat, lng,  loadImage, loaderText, isLoading} = this.state;
 
-        </div>
+    let indexOfLastTodo = this.state.activePage * this.state.itemPerPage;
+    let indexOfFirstTodo = indexOfLastTodo - this.state.itemPerPage;
+    let renderedProjects = this.state.originalProjectList.slice(indexOfFirstTodo, indexOfLastTodo);
+
+    // const loaderImage = <img src="loader.gif" />;
+
+
+    let listItems = renderedProjects.map((person, index) => {
+      return (
+
+
+      <tr key={index}> 
+          <td  width="20%">{person.Alt}</td>
+          <td>{person.Op}</td>
+          <td>{person.Cou}</td>
+      </tr>
+
+      )
+    });
+    console.log(indexOfFirstTodo);
+
+    return (
+      
+      <div className="App">
+      <h1>Airline List</h1>
+
+       { isLoading ? <div className="loader" ><img width="30px" src="loader.gif" /><span className="loader-text">{loaderText}</span></div> : null }
+
+      <table  style={{width:'100%'}} cellspacing="0" cellpadding="0" className="table table-sm table-dark">
+        <tbody>
+          <tr>
+              <th scope="row" className="border-none" width="150px">Aircraft's model</th>
+            <th scope="row">The manufacturer's name</th>
+            <th scope="row">Country</th>
+          </tr>
+        {listItems}
+          {/* <tr>
+            <th scope="row" className="border-none" width="150px">Aircraft's model</th>
+            <th scope="row">The manufacturer's name</th>
+            <th scope="row">Country</th>
+          </tr>
+          <tr>
+            <td scope="row">{this.state.people.map((person, index) => (
+              <div key={index}>{person.Alt}</div>
+            ))}</td>
+            <td> {this.state.people.map((person, index) => (
+              <div key={index}>{person.Op}</div>
+            ))}</td>
+            <td>{this.state.people.map((person, index) => (
+              <div key={index}>{person.Cou}</div>
+            ))}</td>
+          </tr>
+          <tr>
+            <td scope="row">
+            
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+          </tr> */}
+        </tbody>
+      </table>
+      <footer>
+        <div className="pagination-div">
+          <Pagination
+              activePage={this.state.activePage}
+              itemsCountPerPage={this.state.itemPerPage}
+              totalItemsCount={this.state.originalProjectList.length}
+              pageRangeDisplayed={5}
+              onChange={this.handlePageChange}
+              activeLinkClass="page-link"
+              itemClass="page-item"
+              linkClass="page-link"
+            />
+          <button className="btn btn-default text-center" onClick={this.changeLatitude} >Channge lat</button>
+          </div>
+        
+          {/* <table className="container2">
+          <tr>
+            <td></td>
+            <div className="container1">
+
+            
+
+            </div>
+            </tr>
+          </table> */}
+        </footer>
       </div>
     );
   }
