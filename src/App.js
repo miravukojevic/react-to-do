@@ -6,13 +6,13 @@ import DragSortableList from 'react-drag-sortable'
 class App extends Component {
   state = {
     inputName: '',
-    toDoList: [],
-    list: [
-      {content: (<li>test1</li>), classes:['bigger']},
-      {content: (<li>test2</li>)},
-      {content: (<li>test3</li>), classes:['bigger']},
-      {content: (<li>test4</li>)}
-  ]
+    toDoList: []
+  //   list: [
+  //     {content: (<li>test1</li>), classes:['bigger']},
+  //     {content: (<li>test2</li>)},
+  //     {content: (<li>test3</li>), classes:['bigger']},
+  //     {content: (<li>test4</li>)}
+  // ]
   }
   handleChange = (e) => {
     this.setState({
@@ -20,6 +20,8 @@ class App extends Component {
     })
   }
   removeItemFromList = (mira) => {
+    // console.log(el);
+      console.log(mira);
     this.setState({
       toDoList: this.state.toDoList.filter(el => el !== mira)
       
@@ -33,7 +35,7 @@ class App extends Component {
     if(this.state.inputName !== ''){
       this.setState({
         toDoList: [...this.state.toDoList, this.state.inputName],
-        list: [...this.state.list, {content: (<li onClick={this.removeItemFromList}><span>-</span><div className="title">Click Here to remove an item</div>>{this.state.inputName}</li>)}],
+        // list: [...this.state.list, {content: (<li onClick={this.removeItemFromList}><span>-</span><div className="title">Click Here to remove an item</div>>{this.state.inputName}</li>)}],
         inputName: ""
       })
     }
